@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import API from "../../../api";
+import { AuthContext } from "../../../context/AuthContext";
+import { Navigate } from "react-router-dom";
 
 const AddUser = () => {
+  const { user } = useContext(AuthContext);
+
+  // Hooks must always be at the top
   const [form, setForm] = useState({
     username: "",
     password: "",
@@ -10,6 +15,9 @@ const AddUser = () => {
   });
 
   const [msg, setMsg] = useState("");
+
+  // ADMIN PROTECTION (after hooks)
+  if (user?.role !== "admin") return <Navigate to="/" />;
 
   const change = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -22,7 +30,10 @@ const AddUser = () => {
     }
 
     try {
-      const res = await API.post("/auth/add-user", form);
+      const res = await API.post("/auth/add-user", form, {
+        headers: { "x-role": user.role }
+      });
+
       setMsg(res.data.message);
     } catch (err) {
       setMsg(err.response?.data?.message || "Error");

@@ -9,11 +9,11 @@ import { isAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Public
-router.post("/signup", signup);     // user/admin signup
-router.post("/login", loginUser);   // login both roles
+// PUBLIC
+router.post("/signup", signup);
+router.post("/login", loginUser);
 
-// Admin
+// ADMIN
 router.post("/add-user", isAdmin, addUser);
 router.put("/update-user", isAdmin, updateUser);
 

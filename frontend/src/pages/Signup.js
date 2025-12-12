@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import API from "../api";
 
 const Signup = () => {
@@ -22,7 +23,7 @@ const Signup = () => {
     }
 
     try {
-      const res = await API.post("/auth/signup", form);
+      await API.post("/auth/signup", form); // Fixed: no unused variable
       setMsg("Signup successful! You can now login.");
     } catch (err) {
       setMsg(err.response?.data?.message || "Error");
@@ -64,14 +65,20 @@ const Signup = () => {
         onChange={handle}
       >
         <option value="user">User</option>
-        <option value="admin">Admin</option>
+        {/* <option value="admin">Admin</option> */}
       </select>
 
       <button className="btn btn-primary w-100" onClick={submit}>
         Signup
       </button>
 
-      {msg && <div className="alert alert-info mt-3">{msg}</div>}
+      {/* Message */}
+      {msg && <div className="alert alert-danger mt-3">{msg}</div>}
+
+      {/* Login link */}
+      <Link to="/" className="d-block mt-3 text-center">
+        Already have an account? Login
+      </Link>
     </div>
   );
 };

@@ -9,23 +9,30 @@ export const addBook = async (req, res) => {
     if (!name || !author || !category || !cost || !procurementDate || !serialCount)
       return res.status(400).json({ message: "All fields mandatory" });
 
+    // Create main book record
     const newBook = await Book.create({
       type: type || "book",
       name,
       author,
       category,
       cost,
-      procurementDate
+      procurementDate,
+      serialCount   // IMPORTANT: save in book
     });
 
-    // Add serial numbers
+    // Create serial numbers
     let serialList = [];
     for (let i = 1; i <= serialCount; i++) {
       const serialNumber = `${newBook._id}-${i}`;
+
       const serial = await Serial.create({
         bookId: newBook._id,
-        serialNumber
+        serialNumber,
+        bookName: newBook.name,   // REQUIRED for ReturnBook, IssueBook, Availability
+        author: newBook.author,   // REQUIRED
+        available: true
       });
+
       serialList.push(serial);
     }
 
@@ -41,6 +48,7 @@ export const addBook = async (req, res) => {
   }
 };
 
+
 // ---------------------------- UPDATE BOOK / MOVIE ----------------------------
 export const updateBook = async (req, res) => {
   try {
@@ -49,6 +57,7 @@ export const updateBook = async (req, res) => {
     if (!bookId)
       return res.status(400).json({ message: "Book ID required" });
 
+    // Update main Book record
     const updated = await Book.findByIdAndUpdate(
       bookId,
       { type, name, author, category, cost },
@@ -57,6 +66,21 @@ export const updateBook = async (req, res) => {
 
     if (!updated)
       return res.status(404).json({ message: "Book not found" });
+
+    // ----------------------------
+    // UPDATE ALL SERIAL COPIES
+    // ----------------------------
+    const serialUpdateData = {};
+
+    if (name) serialUpdateData.bookName = name;
+    if (author) serialUpdateData.author = author;
+
+    if (Object.keys(serialUpdateData).length > 0) {
+      await Serial.updateMany(
+        { bookId: bookId },
+        { $set: serialUpdateData }
+      );
+    }
 
     res.json({
       message: "Book/Movie updated successfully",

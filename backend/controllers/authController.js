@@ -96,20 +96,21 @@ export const addUser = async (req, res) => {
 // -------------------------- ADMIN: UPDATE USER ----------------------------
 export const updateUser = async (req, res) => {
   try {
-    const { userId, password, name, role, status } = req.body;
+    const { username, password, name, role, status } = req.body;
 
-    if (!userId)
-      return res.status(400).json({ message: "User ID required" });
+    if (!username)
+      return res.status(400).json({ message: "Username is required" });
 
     const updatedData = {};
 
-    if (name) updatedData.name = name;
-    if (role) updatedData.role = role;
-    if (status) updatedData.status = status;
-    if (password) updatedData.password = await bcrypt.hash(password, 10);
+    if (name?.trim()) updatedData.name = name;
+    if (role?.trim()) updatedData.role = role;
+    if (status?.trim()) updatedData.status = status;
+    if (password?.trim())
+      updatedData.password = await bcrypt.hash(password, 10);
 
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
+    const updatedUser = await User.findOneAndUpdate(
+      { username },        // 🔥 FIND BY USERNAME
       updatedData,
       { new: true }
     );
@@ -117,7 +118,10 @@ export const updateUser = async (req, res) => {
     if (!updatedUser)
       return res.status(404).json({ message: "User not found" });
 
-    res.json({ message: "User updated successfully", user: updatedUser });
+    return res.json({
+      message: "User updated successfully",
+      user: updatedUser,
+    });
 
   } catch (error) {
     console.error("Update User error:", error);

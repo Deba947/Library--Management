@@ -1,0 +1,35 @@
+.dash-card {
+  display: block;
+  padding: 25px;
+  border-radius: 12px;
+  color: white;
+  text-decoration: none;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dash-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0px 7px 18px rgba(0,0,0,0.2);
+}
+
+.icon {
+  font-size: 45px;
+  margin-bottom: 10px;
+}
+
+/* Card Colors */
+.card-maint {
+  background-color: #007bff;
+}
+
+.card-trans {
+  background-color: #17a2b8;
+}
+
+.card-report {
+  background-color: #28a745;
+}
+.card-blue{
+  background-color: yellowgreen;
+}

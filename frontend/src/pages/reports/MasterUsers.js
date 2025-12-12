@@ -5,7 +5,9 @@ const MasterUsers = () => {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    API.get("/reports/users").then((res) => setUsers(res.data));
+    API.get("/reports/users")
+      .then((res) => setUsers(res.data))
+      .catch((err) => console.error("Error loading users:", err));
   }, []);
 
   return (
@@ -14,17 +16,20 @@ const MasterUsers = () => {
       <hr />
 
       <table className="table table-bordered">
-        <thead>
+        <thead className="table-dark">
           <tr>
+            <th>User ID</th>
             <th>Name</th>
             <th>Username</th>
             <th>Role</th>
             <th>Status</th>
           </tr>
         </thead>
+
         <tbody>
           {users.map((u) => (
             <tr key={u._id}>
+              <td>{u._id}</td>
               <td>{u.name}</td>
               <td>{u.username}</td>
               <td>{u.role}</td>

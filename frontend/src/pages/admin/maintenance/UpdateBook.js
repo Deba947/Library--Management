@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import API from "../../../api";
+import { AuthContext } from "../../../context/AuthContext";
+import { Navigate } from "react-router-dom";
 
 const UpdateBook = () => {
+  const { user } = useContext(AuthContext);
+
+  // Hooks must stay on top
   const [form, setForm] = useState({
     bookId: "",
     type: "book",
@@ -12,6 +17,9 @@ const UpdateBook = () => {
   });
 
   const [msg, setMsg] = useState("");
+
+  // ADMIN PROTECTION (MUST COME AFTER HOOKS)
+  if (user?.role !== "admin") return <Navigate to="/" />;
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -24,7 +32,9 @@ const UpdateBook = () => {
     }
 
     try {
-      const res = await API.put("/book/update", form);
+      const res = await API.put("/book/update", form, {
+        headers: { "x-role": user.role }
+      });
       setMsg(res.data.message);
     } catch (err) {
       setMsg(err.response?.data?.message || "Error");
@@ -45,7 +55,11 @@ const UpdateBook = () => {
       />
 
       <label>Type:</label>
-      <select name="type" className="form-control mb-3" onChange={handleChange}>
+      <select
+        name="type"
+        className="form-control mb-3"
+        onChange={handleChange}
+      >
         <option value="book">Book</option>
         <option value="movie">Movie</option>
       </select>

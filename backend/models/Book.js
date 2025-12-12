@@ -6,25 +6,36 @@ const BookSchema = new mongoose.Schema({
     enum: ["book", "movie"],
     default: "book"
   },
+
   name: {
     type: String,
     required: true
   },
+
   author: {
     type: String,
     required: true
   },
+
   category: {
     type: String,
     required: true
   },
+
   cost: {
     type: Number,
     required: true
   },
+
   procurementDate: {
     type: Date,
     required: true
+  },
+
+  // NEW FIELD — required for creating serials
+  serialCount: {
+    type: Number,
+    default: 1
   }
 }, { timestamps: true });
 

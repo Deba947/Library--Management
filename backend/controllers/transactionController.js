@@ -1,14 +1,12 @@
-import Book from "../models/Book.js";
 import Serial from "../models/Serial.js";
+import Book from "../models/Book.js";
 import Transaction from "../models/Transaction.js";
+import User from "../models/User.js";  // ✅ REQUIRED IMPORT
 
-// ---------------------------- BOOK AVAILABILITY SEARCH ----------------------------
+// -------------------- SEARCH --------------------
 export const searchAvailableBooks = async (req, res) => {
   try {
     const { name, author } = req.query;
-
-    if (!name && !author)
-      return res.status(400).json({ message: "Enter book name or author" });
 
     const books = await Book.find({
       $or: [
@@ -24,154 +22,123 @@ export const searchAvailableBooks = async (req, res) => {
     }
 
     res.json(result);
-
   } catch (err) {
-    console.error("Search Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// ---------------------------- ISSUE BOOK ----------------------------
-export const issueBook = async (req, res) => {
-  try {
-    const { userId, bookId, serialId, issueDate, returnDate, remarks } = req.body;
-
-    if (!userId || !bookId || !serialId || !issueDate || !returnDate)
-      return res.status(400).json({ message: "All fields are mandatory" });
-
-    const serial = await Serial.findById(serialId);
-    if (!serial.available)
-      return res.status(400).json({ message: "Book copy unavailable" });
-
-    // Mark as unavailable
-    serial.available = false;
-    await serial.save();
-
-    const transaction = await Transaction.create({
-      userId,
-      bookId,
-      serialId,
-      issueDate,
-      returnDate,
-      remarks,
-      status: "issued"
-    });
-
-    res.json({
-      message: "Book issued successfully",
-      transaction
-    });
-
-  } catch (err) {
-    console.error("Issue Book Error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-// ---------------------------- GET ISSUE DETAILS FOR RETURN SCREEN ----------------------------
+// -------------------- GET ACTIVE ISSUE --------------------
 export const getIssuedRecord = async (req, res) => {
   try {
     const { serialNumber } = req.query;
 
     const serial = await Serial.findOne({ serialNumber });
+
     if (!serial)
-      return res.status(404).json({ message: "Invalid serial number" });
+      return res.status(404).json({ message: "Invalid serial" });
 
     const trx = await Transaction.findOne({
       serialId: serial._id,
       status: "issued"
     })
-      .populate("bookId")
       .populate("userId")
+      .populate("bookId")
       .populate("serialId");
 
     if (!trx)
-      return res.status(404).json({ message: "No active issue found" });
+      return res.status(404).json({ message: "No active issue" });
 
     res.json(trx);
 
   } catch (err) {
-    console.error("Fetch Issue Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// ---------------------------- RETURN BOOK (CALCULATE FINE) ----------------------------
+// -------------------- RETURN BOOK --------------------
 export const returnBook = async (req, res) => {
   try {
     const { transactionId, actualReturnDate, remarks, finePaid } = req.body;
 
     const trx = await Transaction.findById(transactionId);
+
     if (!trx)
       return res.status(404).json({ message: "Transaction not found" });
 
-    // Calculate fine
-    const diff = Math.ceil(
-      (new Date(actualReturnDate) - new Date(trx.returnDate)) / (1000 * 60 * 60 * 24)
+    const daysLate = Math.ceil(
+      (new Date(actualReturnDate) - new Date(trx.returnDate)) /
+      (1000 * 60 * 60 * 24)
     );
 
-    let fine = diff > 0 ? diff * 10 : 0;
+    const fine = daysLate > 0 ? daysLate * 10 : 0;
 
     if (fine > 0 && !finePaid)
-      return res.status(400).json({ message: "Fine must be paid before returning" });
+      return res.status(400).json({ message: "Fine must be paid" });
 
-    // Update serial availability
     const serial = await Serial.findById(trx.serialId);
     serial.available = true;
     await serial.save();
 
-    // Update transaction
     trx.actualReturnDate = actualReturnDate;
-    trx.fine = fine;
-    trx.finePaid = fine > 0 ? finePaid : true;
     trx.remarks = remarks;
     trx.status = "returned";
+    trx.fine = fine;
+    trx.finePaid = fine > 0 ? finePaid : true;
+
     await trx.save();
 
-    res.json({
-      message: "Book returned successfully",
-      transaction: trx
-    });
+    res.json({ message: "Book returned", trx });
 
   } catch (err) {
-    console.error("Return Book Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// ---------------------------- OVERDUE REPORT ----------------------------
+
+// -------------------- OVERDUE BOOKS (Admin: all, User: own only) --------------------
 export const overdueBooks = async (req, res) => {
   try {
-    const today = new Date();
+    const role = req.header("x-role");
+    const username = req.header("x-username"); // frontend sends this
 
-    const overdue = await Transaction.find({
+    let query = {
       status: "issued",
-      returnDate: { $lt: today }
-    })
-      .populate("bookId")
+      returnDate: { $lt: new Date() }
+    };
+
+    // USER SEES ONLY THEIR OWN RECORDS
+    if (role === "user") {
+      const user = await User.findOne({ username });
+
+      if (!user) return res.json([]);
+
+      query.userId = user._id; // filter for specific user
+    }
+
+    const overdue = await Transaction.find(query)
+      .populate("userId")
       .populate("serialId")
-      .populate("userId");
+      .populate("bookId");
 
     res.json(overdue);
 
   } catch (err) {
-    console.error("Overdue Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// ---------------------------- ACTIVE ISSUES REPORT ----------------------------
+
+// -------------------- ALL ACTIVE ISSUES --------------------
 export const activeIssues = async (req, res) => {
   try {
     const list = await Transaction.find({ status: "issued" })
-      .populate("bookId")
+      .populate("userId")
       .populate("serialId")
-      .populate("userId");
+      .populate("bookId");
 
     res.json(list);
 
   } catch (err) {
-    console.error("Active Issues Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

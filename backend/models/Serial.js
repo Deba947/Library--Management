@@ -6,11 +6,24 @@ const SerialSchema = new mongoose.Schema({
     ref: "Book",
     required: true
   },
+
   serialNumber: {
     type: String,
     required: true,
     unique: true
   },
+
+  // NEW FIELDS — required for IssueBook & ReturnBook
+  bookName: {
+    type: String,
+    required: true
+  },
+
+  author: {
+    type: String,
+    required: true
+  },
+
   available: {
     type: Boolean,
     default: true

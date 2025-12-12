@@ -1,16 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import API from "../../../api";
+import { AuthContext } from "../../../context/AuthContext";
+import { Navigate } from "react-router-dom";
 
 const UpdateUser = () => {
+  const { user } = useContext(AuthContext);
+
   const [form, setForm] = useState({
     userId: "",
     name: "",
     password: "",
     role: "",
-    status: ""
+    status: "",
   });
 
   const [msg, setMsg] = useState("");
+
+  // ADMIN ONLY
+  if (user?.role !== "admin") return <Navigate to="/" />;
 
   const change = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -23,10 +30,23 @@ const UpdateUser = () => {
     }
 
     try {
-      const res = await API.put("/auth/update-user", form);
+      const res = await API.put("/auth/update-user", form, {
+        headers: { "x-role": user.role },
+      });
+
       setMsg(res.data.message);
+
+      // Optional: Reset form
+      setForm({
+        userId: "",
+        name: "",
+        password: "",
+        role: "",
+        status: "",
+      });
+
     } catch (err) {
-      setMsg(err.response?.data?.message || "Error");
+      setMsg(err.response?.data?.message || "Error updating user");
     }
   };
 
@@ -39,6 +59,7 @@ const UpdateUser = () => {
         name="userId"
         placeholder="User ID"
         className="form-control mb-3"
+        value={form.userId}
         onChange={change}
       />
 
@@ -46,26 +67,38 @@ const UpdateUser = () => {
         name="name"
         placeholder="Name"
         className="form-control mb-3"
+        value={form.name}
         onChange={change}
       />
 
       <input
         name="password"
-        placeholder="New Password"
         type="password"
+        placeholder="New Password"
         className="form-control mb-3"
+        value={form.password}
         onChange={change}
       />
 
       <label>Role:</label>
-      <select name="role" className="form-control mb-3" onChange={change}>
+      <select
+        name="role"
+        className="form-control mb-3"
+        value={form.role}
+        onChange={change}
+      >
         <option value="">--Select--</option>
         <option value="user">User</option>
         <option value="admin">Admin</option>
       </select>
 
       <label>Status:</label>
-      <select name="status" className="form-control mb-3" onChange={change}>
+      <select
+        name="status"
+        className="form-control mb-3"
+        value={form.status}
+        onChange={change}
+      >
         <option value="">--Select--</option>
         <option value="active">Active</option>
         <option value="inactive">Inactive</option>

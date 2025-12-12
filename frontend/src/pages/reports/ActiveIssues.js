@@ -3,36 +3,67 @@ import API from "../../api";
 
 const ActiveIssues = () => {
   const [list, setList] = useState([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    API.get("/transaction/active").then((res) => setList(res.data));
+    const loadData = async () => {
+      try {
+        const res = await API.get("/reports/active");
+        setList(res.data);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load active issues");
+      }
+    };
+
+    loadData();
   }, []);
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    try {
+      return dateStr.split("T")[0];
+    } catch {
+      return "-";
+    }
+  };
 
   return (
     <div className="container mt-4">
       <h3>Active Issues</h3>
       <hr />
 
-      <table className="table table-bordered">
+      {error && <div className="alert alert-danger">{error}</div>}
+
+      <table className="table table-bordered table-striped">
         <thead>
           <tr>
             <th>User</th>
             <th>Book</th>
-            <th>Serial</th>
+            <th>Serial No.</th>
             <th>Issue Date</th>
             <th>Return Date</th>
           </tr>
         </thead>
+
         <tbody>
-          {list.map((t) => (
-            <tr key={t._id}>
-              <td>{t.userId?.name}</td>
-              <td>{t.bookId?.name}</td>
-              <td>{t.serialId?.serialNumber}</td>
-              <td>{t.issueDate.split("T")[0]}</td>
-              <td>{t.returnDate.split("T")[0]}</td>
+          {list.length === 0 ? (
+            <tr>
+              <td colSpan="5" className="text-center text-muted">
+                No active issues found
+              </td>
             </tr>
-          ))}
+          ) : (
+            list.map((t) => (
+              <tr key={t._id}>
+                <td>{t.userId?.name || "Unknown User"}</td>
+                <td>{t.bookId?.name || "Unknown Book"}</td>
+                <td>{t.serialId?.serialNumber || "N/A"}</td>
+                <td>{formatDate(t.issueDate)}</td>
+                <td>{formatDate(t.returnDate)}</td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>

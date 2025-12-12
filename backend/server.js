@@ -7,6 +7,8 @@ import membershipRoutes from "./routes/membershipRoutes.js";
 import bookRoutes from "./routes/bookRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
+import requestRoutes from "./routes/requestRoutes.js"; 
+
 
 dotenv.config();
 
@@ -23,6 +25,8 @@ app.use("/api/membership", membershipRoutes);
 app.use("/api/book", bookRoutes);
 app.use("/api/transaction", transactionRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/request", requestRoutes);
+
 
 app.get("/", (req, res) => {
   res.send("Library Management Backend Running");

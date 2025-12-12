@@ -1,30 +1,36 @@
 import React, { useState } from "react";
-import API from "../../api";
 import { useNavigate } from "react-router-dom";
+import API from "../../api";
 
 const ReturnBook = () => {
   const [serialNumber, setSerialNumber] = useState("");
-  const [trx, setTrx] = useState(null);
-  const [actualReturnDate, setActualReturnDate] = useState("");
-  const [remarks, setRemarks] = useState("");
-  const navigate = useNavigate();
-  const [error, setError] = useState("");
+  const [data, setData] = useState(null);
+  const [msg, setMsg] = useState("");
 
-  const findTransaction = async () => {
+  const navigate = useNavigate();
+
+  const fetchDetails = async () => {
+    if (!serialNumber.trim()) {
+      setMsg("Enter serial number");
+      return;
+    }
+
     try {
       const res = await API.get(
         `/transaction/issued-details?serialNumber=${serialNumber}`
       );
-      setTrx(res.data);
+
+      setData(res.data);
+      setMsg("");
+
     } catch (err) {
-      setError("No issued record found");
+      setMsg(err.response?.data?.message || "Not found");
+      setData(null);
     }
   };
 
-  const proceed = () => {
-    navigate("/transactions/pay-fine", {
-      state: { trx, actualReturnDate, remarks }
-    });
+  const continueReturn = () => {
+    navigate("/transactions/pay-fine", { state: { record: data } });
   };
 
   return (
@@ -32,46 +38,33 @@ const ReturnBook = () => {
       <h3>Return Book</h3>
       <hr />
 
-      {!trx && (
-        <>
-          <input
-            className="form-control mb-3"
-            placeholder="Serial Number"
-            onChange={(e) => setSerialNumber(e.target.value)}
-          />
+      <input
+        className="form-control mb-3"
+        placeholder="Enter Serial Number"
+        onChange={(e) => setSerialNumber(e.target.value)}
+      />
 
-          <button className="btn btn-primary" onClick={findTransaction}>
-            Search
+      <button className="btn btn-primary w-100" onClick={fetchDetails}>
+        Fetch Details
+      </button>
+
+      {msg && <div className="alert alert-danger mt-3">{msg}</div>}
+
+      {data && (
+        <div className="mt-4 p-3 border rounded">
+          <h5>Book Details</h5>
+          <p><b>Name:</b> {data.bookId.name}</p>
+          <p><b>Author:</b> {data.bookId.author}</p>
+          <p><b>Serial:</b> {data.serialId.serialNumber}</p>
+
+          <h5 className="mt-3">Issue Info</h5>
+          <p><b>Issued:</b> {data.issueDate.split("T")[0]}</p>
+          <p><b>Return Date:</b> {data.returnDate.split("T")[0]}</p>
+
+          <button className="btn btn-success w-100 mt-3" onClick={continueReturn}>
+            Continue → Fine Payment
           </button>
-
-          {error && <div className="alert alert-danger mt-3">{error}</div>}
-        </>
-      )}
-
-      {trx && (
-        <>
-          <p><b>Book:</b> {trx.bookId.name}</p>
-          <p><b>Author:</b> {trx.bookId.author}</p>
-          <p><b>Issue Date:</b> {trx.issueDate.split("T")[0]}</p>
-          <p><b>Return Date:</b> {trx.returnDate.split("T")[0]}</p>
-
-          <label>Actual Return Date:</label>
-          <input
-            type="date"
-            className="form-control mb-3"
-            onChange={(e) => setActualReturnDate(e.target.value)}
-          />
-
-          <textarea
-            className="form-control mb-3"
-            placeholder="Remarks"
-            onChange={(e) => setRemarks(e.target.value)}
-          ></textarea>
-
-          <button className="btn btn-success" onClick={proceed}>
-            Proceed to Fine Calculation
-          </button>
-        </>
+        </div>
       )}
     </div>
   );

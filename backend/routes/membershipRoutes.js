@@ -7,4 +7,5 @@ const router = express.Router();
 router.post("/add", isAdmin, addMembership);
 router.put("/update", isAdmin, updateMembership);
 
+
 export default router;

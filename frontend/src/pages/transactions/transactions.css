@@ -1,0 +1,41 @@
+.trans-card {
+  display: block;
+  padding: 25px;
+  border-radius: 12px;
+  color: white;
+  text-decoration: none;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.trans-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0px 8px 20px rgba(0,0,0,0.2);
+}
+
+.icon {
+  font-size: 45px;
+  margin-bottom: 10px;
+}
+
+/* Colors for each card */
+.card-blue {
+  background-color: #007bff;
+}
+
+.card-green {
+  background-color: #28a745;
+}
+
+.card-yellow {
+  background-color: #ffc107;
+  color: #333 !important;
+}
+
+.card-gray {
+  background-color: #6c757d;
+}
+
+.card-red {
+  background-color: #dc3545;
+}

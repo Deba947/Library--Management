@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import API from "../../../api";
+import { AuthContext } from "../../../context/AuthContext";
+import { Navigate } from "react-router-dom";
 
 const AddMembership = () => {
+  const { user } = useContext(AuthContext);
+
+  // Hooks must ALWAYS come before conditional returns
   const [form, setForm] = useState({
     membershipNumber: "",
     memberName: "",
@@ -9,6 +14,9 @@ const AddMembership = () => {
   });
 
   const [msg, setMsg] = useState("");
+
+  // Now we check admin AFTER all hooks
+  if (user?.role !== "admin") return <Navigate to="/" />;
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -21,7 +29,9 @@ const AddMembership = () => {
     }
 
     try {
-      const res = await API.post("/membership/add", form);
+      const res = await API.post("/membership/add", form, {
+        headers: { "x-role": user.role }
+      });
       setMsg(res.data.message);
     } catch (err) {
       setMsg(err.response?.data?.message || "Error");

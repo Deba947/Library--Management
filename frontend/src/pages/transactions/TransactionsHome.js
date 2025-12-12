@@ -1,48 +1,70 @@
 import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
+import "./transactions.css";
 
 const TransactionsHome = () => {
   const { user } = useContext(AuthContext);
 
   return (
     <div className="container mt-5">
-      <h3>Transactions</h3>
+
+      <h2 className="fw-bold text-center">Transactions</h2>
+      <p className="text-center text-muted">Issue, Return & Book Status</p>
       <hr />
 
-      <ul style={{ fontSize: "18px", lineHeight: "35px" }}>
+      <div className="row g-4 mt-4">
 
-        {/* Book Availability — for both Admin & User */}
-        <li>
-          <Link to="/transactions/book-availability">Book Availability</Link>
-        </li>
+        {/* Book Availability */}
+        <div className="col-md-4">
+          <Link to="/transactions/book-availability" className="trans-card card-blue">
+            <div className="icon">📚</div>
+            <h5>Book Availability</h5>
+            <p>Check available copies & serial numbers</p>
+          </Link>
+        </div>
 
-        {/* Return Book — for both Admin & User */}
-        <li>
-          <Link to="/transactions/return-book">Return Book</Link>
-        </li>
+        {/* Return Book */}
+        <div className="col-md-4">
+          <Link to="/transactions/return-book" className="trans-card card-green">
+            <div className="icon">🔁</div>
+            <h5>Return Book</h5>
+            <p>Process returned books & calculate fines</p>
+          </Link>
+        </div>
 
-        {/* Pending Issue Requests — only admin */}
+        {/* Pending Requests — Admin Only */}
         {user?.role === "admin" && (
-          <li>
-            <Link to="/reports/pending-requests">Pending Issue Requests</Link>
-          </li>
+          <div className="col-md-4">
+            <Link to="/transactions/pending-issues" className="trans-card card-yellow">
+              <div className="icon">⏳</div>
+              <h5>Pending Issue Requests</h5>
+              <p>Requests waiting for admin approval</p>
+            </Link>
+          </div>
         )}
 
-        {/* Active Issue List — admin only */}
+        {/* Active Issues — Admin Only */}
         {user?.role === "admin" && (
-          <li>
-            <Link to="/reports/active-issues">Active Issues</Link>
-          </li>
+          <div className="col-md-4">
+            <Link to="/transactions/active-issues" className="trans-card card-gray">
+              <div className="icon">📘</div>
+              <h5>Active Issues</h5>
+              <p>Books currently issued to users</p>
+            </Link>
+          </div>
         )}
 
-        {/* Overdue List — admin only */}
-        {user?.role === "admin" && (
-          <li>
-            <Link to="/reports/overdue">Overdue Books</Link>
-          </li>
-        )}
-      </ul>
+        {/* ⭐ Overdue Books — Admin + Users */}
+        <div className="col-md-4">
+          <Link to="/transactions/overdue" className="trans-card card-red">
+            <div className="icon">⚠️</div>
+            <h5>Overdue Books</h5>
+            <p>View overdue books & fines</p>
+          </Link>
+        </div>
+
+      </div>
     </div>
   );
 };

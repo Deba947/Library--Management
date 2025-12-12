@@ -1,10 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import API from "../../../api";
+import { AuthContext } from "../../../context/AuthContext";
+import { Navigate } from "react-router-dom";
 
 const UpdateMembership = () => {
+  const { user } = useContext(AuthContext);
+
+  // ✅ Hooks ALWAYS go first — NEVER inside conditions
   const [membershipNumber, setMembershipNumber] = useState("");
   const [action, setAction] = useState("extend");
   const [msg, setMsg] = useState("");
+
+  // ❌ DO NOT put hooks below this line  
+  // ✅ Now we can conditionally return safely
+  if (user?.role !== "admin") {
+    return <Navigate to="/" replace />;
+  }
 
   const handleSubmit = async () => {
     if (!membershipNumber) {
@@ -13,11 +24,12 @@ const UpdateMembership = () => {
     }
 
     try {
-      const res = await API.put("/membership/update", {
-        membershipNumber,
-        action,
-        duration: 6
-      });
+      const res = await API.put(
+        "/membership/update",
+        { membershipNumber, action, duration: 6 },
+        { headers: { "x-role": user.role } }
+      );
+
       setMsg(res.data.message);
     } catch (err) {
       setMsg(err.response?.data?.message || "Error");
@@ -39,6 +51,7 @@ const UpdateMembership = () => {
       <label>Action:</label>
       <select
         className="form-control mb-3"
+        value={action}
         onChange={(e) => setAction(e.target.value)}
       >
         <option value="extend">Extend 6 Months</option>

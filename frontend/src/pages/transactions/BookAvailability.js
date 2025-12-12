@@ -16,10 +16,12 @@ const BookAvailability = () => {
     }
 
     try {
-      const res = await API.get(`/transaction/search?name=${name}&author=${author}`);
+      const res = await API.get(
+        `/transaction/search?name=${name}&author=${author}`
+      );
 
       navigate("/transactions/search-results", {
-        state: { results: res.data }
+        state: { results: res.data },
       });
 
     } catch (err) {

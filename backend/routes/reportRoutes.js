@@ -3,7 +3,7 @@ import {
   masterBooks,
   masterMemberships,
   masterUsers,
-  pendingRequests
+  userMembership
 } from "../controllers/reportController.js";
 
 const router = express.Router();
@@ -11,6 +11,8 @@ const router = express.Router();
 router.get("/books", masterBooks);
 router.get("/memberships", masterMemberships);
 router.get("/users", masterUsers);
-router.get("/pending", pendingRequests);
+
+// ⭐ USER ONLY MEMBERSHIP ROUTE
+router.get("/user-membership", userMembership);
 
 export default router;

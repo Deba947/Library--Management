@@ -6,42 +6,39 @@ const PayFine = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  const trx = state?.trx;
-  const actualReturnDate = state?.actualReturnDate;
-
+  const trx = state?.record;
+  const [actualReturnDate, setActualReturn] = useState(
+    new Date().toISOString().split("T")[0]
+  );
   const [fine, setFine] = useState(0);
   const [finePaid, setFinePaid] = useState(false);
-  const [remarks, setRemarks] = useState(state?.remarks || "");
-  const [error, setError] = useState("");
+  const [remarks, setRemarks] = useState("");
 
   useEffect(() => {
-    if (trx && actualReturnDate) {
+    if (trx) {
       const due = new Date(trx.returnDate);
       const act = new Date(actualReturnDate);
-      const diff = Math.ceil((act - due) / (1000 * 60 * 60 * 24));
 
+      const diff = Math.ceil((act - due) / (1000 * 60 * 60 * 24));
       setFine(diff > 0 ? diff * 10 : 0);
     }
-  }, [trx, actualReturnDate]);
+  }, [actualReturnDate, trx]);
 
-  const submit = async () => {
+  const submitReturn = async () => {
     if (fine > 0 && !finePaid) {
-      setError("Fine must be paid to complete the return");
+      alert("Fine must be paid");
       return;
     }
 
-    try {
-      await API.post("/transaction/return", {
-        transactionId: trx._id,
-        actualReturnDate,
-        remarks,
-        finePaid
-      });
+    await API.post("/transaction/return", {
+      transactionId: trx._id,
+      actualReturnDate,
+      remarks,
+      finePaid,
+    });
 
-      navigate("/transactions");
-    } catch (err) {
-      setError("Error completing return");
-    }
+    alert("Book Returned Successfully");
+    navigate("/transactions");
   };
 
   return (
@@ -49,7 +46,19 @@ const PayFine = () => {
       <h3>Pay Fine</h3>
       <hr />
 
-      <p><b>Fine Amount:</b> ₹{fine}</p>
+      <p><b>Book:</b> {trx.bookId.name}</p>
+      <p><b>Author:</b> {trx.bookId.author}</p>
+      <p><b>Serial:</b> {trx.serialId.serialNumber}</p>
+
+      <label>Actual Return Date:</label>
+      <input
+        type="date"
+        className="form-control mb-3"
+        value={actualReturnDate}
+        onChange={(e) => setActualReturn(e.target.value)}
+      />
+
+      <p><b>Fine:</b> ₹{fine}</p>
 
       {fine > 0 && (
         <div className="form-check mb-3">
@@ -58,20 +67,17 @@ const PayFine = () => {
             className="form-check-input"
             onChange={(e) => setFinePaid(e.target.checked)}
           />
-          <label className="form-check-label">Fine Paid</label>
+          <label>Fine Paid</label>
         </div>
       )}
 
       <textarea
         className="form-control mb-3"
         placeholder="Remarks"
-        value={remarks}
         onChange={(e) => setRemarks(e.target.value)}
-      ></textarea>
+      />
 
-      {error && <div className="alert alert-danger">{error}</div>}
-
-      <button className="btn btn-primary" onClick={submit}>
+      <button className="btn btn-success w-100" onClick={submitReturn}>
         Confirm Return
       </button>
     </div>
