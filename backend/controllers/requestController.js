@@ -3,7 +3,7 @@ import Serial from "../models/Serial.js";
 import IssueRequest from "../models/IssueRequest.js";
 import Transaction from "../models/Transaction.js";
 
-// --------------------- USER : CREATE REQUEST ---------------------
+//  USER : CREATE REQUEST 
 export const createRequest = async (req, res) => {
   try {
     const { username, bookId, serialId } = req.body;
@@ -57,7 +57,7 @@ export const createRequest = async (req, res) => {
   }
 };
 
-// --------------------- ADMIN : VIEW ALL REQUESTS ---------------------
+//  ADMIN : VIEW ALL REQUESTS 
 export const getAllRequests = async (req, res) => {
   try {
     const list = await IssueRequest.find()
@@ -73,17 +73,51 @@ export const getAllRequests = async (req, res) => {
   }
 };
 
-// --------------------- ADMIN : APPROVE REQUEST (ISSUE BOOK) ---------------------
+// ADMIN : APPROVE REQUEST (ISSUE BOOK) 
 export const approveRequest = async (req, res) => {
   try {
     const { requestId } = req.params;
 
+    // Fetch the request and ensure it exists
     const reqData = await IssueRequest.findById(requestId);
 
     if (!reqData)
       return res.status(404).json({ message: "Request not found" });
 
+    // 1. CHECK REQUEST STATUS: Only approve pending requests
+    if (reqData.status !== "pending") {
+      return res.status(400).json({ message: `Request is already ${reqData.status}. Cannot approve.` });
+    }
+
+    // 2. GET SERIAL & PERFORM CRITICAL AVAILABILITY CHECK
     const serial = await Serial.findById(reqData.serialId);
+    
+    if (!serial) {
+      reqData.status = "rejected"; 
+      await reqData.save();
+      return res.status(400).json({ message: "Book copy (Serial) not found for this request. Request rejected." });
+    }
+
+    // 3. CRITICAL CHECK: If the serial is not available
+    if (!serial.available) {
+      const existingTransaction = await Transaction.findOne({
+        serialId: reqData.serialId,
+        returned: false
+      });
+        
+      let rejectMessage = "Cannot approve request. The book copy (serial) is already issued or pending approval.";
+
+      if (existingTransaction) {
+        rejectMessage = "Cannot approve request. The book copy (serial) has already been issued to another user.";
+      }
+        
+      reqData.status = "rejected"; 
+      await reqData.save();
+        
+      return res.status(400).json({ message: rejectMessage });
+    }
+
+    // 4. PROCEED WITH APPROVAL (MARK SERIAL UNAVAILABLE)
     serial.available = false;
     await serial.save();
 
@@ -91,6 +125,7 @@ export const approveRequest = async (req, res) => {
     const returnDate = new Date();
     returnDate.setDate(issueDate.getDate() + 7);
 
+    // 5. CREATE TRANSACTION
     const transaction = await Transaction.create({
       userId: reqData.userId,
       bookId: reqData.bookId,
@@ -99,6 +134,7 @@ export const approveRequest = async (req, res) => {
       returnDate
     });
 
+    // 6. UPDATE REQUEST STATUS
     reqData.status = "approved";
     await reqData.save();
 
@@ -109,7 +145,7 @@ export const approveRequest = async (req, res) => {
   }
 };
 
-// --------------------- ADMIN : REJECT REQUEST ---------------------
+//  ADMIN : REJECT REQUEST 
 export const rejectRequest = async (req, res) => {
   try {
     const { requestId } = req.params;

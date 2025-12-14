@@ -6,7 +6,7 @@ import { Navigate } from "react-router-dom";
 const AddMembership = () => {
   const { user } = useContext(AuthContext);
 
-  // Hooks must ALWAYS come before conditional returns
+ 
   const [form, setForm] = useState({
     membershipNumber: "",
     memberName: "",
@@ -15,7 +15,7 @@ const AddMembership = () => {
 
   const [msg, setMsg] = useState("");
 
-  // Now we check admin AFTER all hooks
+  
   if (user?.role !== "admin") return <Navigate to="/" />;
 
   const handleChange = (e) => {
@@ -54,7 +54,7 @@ const AddMembership = () => {
       <input
         type="text"
         name="memberName"
-        placeholder="Member Name"
+        placeholder="Member Username"
         className="form-control mb-3"
         onChange={handleChange}
       />

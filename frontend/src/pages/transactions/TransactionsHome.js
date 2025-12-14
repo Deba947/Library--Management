@@ -55,7 +55,7 @@ const TransactionsHome = () => {
           </div>
         )}
 
-        {/* ⭐ Overdue Books — Admin + Users */}
+        {/*  Overdue Books — Admin + Users */}
         <div className="col-md-4">
           <Link to="/transactions/overdue" className="trans-card card-red">
             <div className="icon">⚠️</div>

@@ -1,33 +1,52 @@
 import Serial from "../models/Serial.js";
 import Book from "../models/Book.js";
 import Transaction from "../models/Transaction.js";
-import User from "../models/User.js";  // ✅ REQUIRED IMPORT
+import User from "../models/User.js";  
 
-// -------------------- SEARCH --------------------
+// SEARCH 
 export const searchAvailableBooks = async (req, res) => {
   try {
-    const { name, author } = req.query;
+    let { name, author } = req.query;
 
-    const books = await Book.find({
-      $or: [
-        { name: new RegExp(name, "i") },
-        { author: new RegExp(author, "i") }
-      ]
-    });
+    name = name?.trim();
+    author = author?.trim();
 
-    let result = [];
-    for (let b of books) {
-      const serials = await Serial.find({ bookId: b._id });
-      result.push({ book: b, serials });
+    if (!name && !author) {
+      return res.status(400).json({
+        message: "Enter book name or author to search"
+      });
+    }
+
+    const orConditions = [];
+
+    if (name) {
+      orConditions.push({
+        name: { $regex: `^${name}`, $options: "i" }
+      });
+    }
+
+    if (author) {
+      orConditions.push({
+        author: { $regex: `^${author}`, $options: "i" }
+      });
+    }
+
+    const books = await Book.find({ $or: orConditions });
+
+    const result = [];
+    for (const book of books) {
+      const serials = await Serial.find({ bookId: book._id });
+      result.push({ book, serials });
     }
 
     res.json(result);
   } catch (err) {
+    console.error("Search Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// -------------------- GET ACTIVE ISSUE --------------------
+//  GET ACTIVE ISSUE
 export const getIssuedRecord = async (req, res) => {
   try {
     const { serialNumber } = req.query;
@@ -55,7 +74,7 @@ export const getIssuedRecord = async (req, res) => {
   }
 };
 
-// -------------------- RETURN BOOK --------------------
+// RETURN BOOK 
 export const returnBook = async (req, res) => {
   try {
     const { transactionId, actualReturnDate, remarks, finePaid } = req.body;
@@ -95,7 +114,7 @@ export const returnBook = async (req, res) => {
 };
 
 
-// -------------------- OVERDUE BOOKS (Admin: all, User: own only) --------------------
+// OVERDUE BOOKS (Admin: all, User: own only) 
 export const overdueBooks = async (req, res) => {
   try {
     const role = req.header("x-role");
@@ -128,10 +147,36 @@ export const overdueBooks = async (req, res) => {
 };
 
 
-// -------------------- ALL ACTIVE ISSUES --------------------
+//  ALL ACTIVE ISSUES
 export const activeIssues = async (req, res) => {
   try {
-    const list = await Transaction.find({ status: "issued" })
+    const role = req.header("x-role");
+    const username = req.header("x-username");
+
+    let query = { status: "issued" };
+
+    // USER  ONLY OWN ISSUES
+    if (role === "user") {
+
+      
+      if (!username) {
+        return res.status(400).json({
+          message: "Username header missing"
+        });
+      }
+
+      const user = await User.findOne({ username });
+
+      if (!user) {
+        return res.status(404).json({
+          message: "User not found"
+        });
+      }
+
+      query.userId = user._id;
+    }
+
+    const list = await Transaction.find(query)
       .populate("userId")
       .populate("serialId")
       .populate("bookId");
@@ -139,6 +184,7 @@ export const activeIssues = async (req, res) => {
     res.json(list);
 
   } catch (err) {
+    console.error("Active Issues Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

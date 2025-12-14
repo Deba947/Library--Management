@@ -3,8 +3,10 @@ import {
   signup,
   loginUser,
   addUser,
-  updateUser
+  updateUser,
+  deleteUser
 } from "../controllers/authController.js";
+
 import { isAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -13,8 +15,12 @@ const router = express.Router();
 router.post("/signup", signup);
 router.post("/login", loginUser);
 
-// ADMIN
+// ADMIN ONLY
 router.post("/add-user", isAdmin, addUser);
 router.put("/update-user", isAdmin, updateUser);
+router.delete("/delete-user", isAdmin, deleteUser);
+
+
+
 
 export default router;

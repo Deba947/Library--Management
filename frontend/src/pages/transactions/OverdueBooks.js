@@ -9,8 +9,8 @@ const OverdueBooks = () => {
   useEffect(() => {
     API.get("/transaction/overdue", {
       headers: {
-        "x-role": user.role,             // admin or user
-        "x-username": user.username      // only used for filtering user records
+        "x-role": user.role,            
+        "x-username": user.username      
       }
     })
       .then((res) => setList(res.data))

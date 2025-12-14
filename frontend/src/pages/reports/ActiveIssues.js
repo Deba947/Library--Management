@@ -8,7 +8,16 @@ const ActiveIssues = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const res = await API.get("/reports/active");
+        const role = localStorage.getItem("role");
+        const username = localStorage.getItem("username");
+
+        const res = await API.get("/transactions/active", {   
+          headers: {
+            "x-role": role,
+            "x-username": username
+          }
+        });
+
         setList(res.data);
       } catch (err) {
         console.error(err);
@@ -32,7 +41,7 @@ const ActiveIssues = () => {
     <div className="container mt-4">
       <h3>Active Issues</h3>
       <hr />
-
+      
       {error && <div className="alert alert-danger">{error}</div>}
 
       <table className="table table-bordered table-striped">

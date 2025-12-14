@@ -11,6 +11,10 @@ const MembershipSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  duration: {               
+    type: Number,           
+    required: true
+  },
 
   startDate: {
     type: Date,

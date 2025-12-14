@@ -1,114 +1,115 @@
-import React, { useState, useContext } from "react";
-import API from "../../../api";
-import { AuthContext } from "../../../context/AuthContext";
-import { Navigate } from "react-router-dom";
+import React, { useState } from "react";
+import axios from "axios";
 
 const UpdateUser = () => {
-  const { user } = useContext(AuthContext);
-
-  const [form, setForm] = useState({
-    userId: "",
+  const [formData, setFormData] = useState({
+    username: "",
     name: "",
     password: "",
     role: "",
     status: "",
   });
 
-  const [msg, setMsg] = useState("");
-
-  // ADMIN ONLY
-  if (user?.role !== "admin") return <Navigate to="/" />;
-
-  const change = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const submit = async () => {
-    if (!form.userId) {
-      setMsg("User ID required");
-      return;
-    }
+  const handleUpdate = async (e) => {
+    e.preventDefault();
 
     try {
-      const res = await API.put("/auth/update-user", form, {
-        headers: { "x-role": user.role },
-      });
+      const res = await axios.put(
+        "http://localhost:5000/api/auth/update-user",
+        formData,
+        {
+          headers: {
+            "x-role": "admin", // Required for admin access
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      setMsg(res.data.message);
-
-      // Optional: Reset form
-      setForm({
-        userId: "",
-        name: "",
-        password: "",
-        role: "",
-        status: "",
-      });
-
-    } catch (err) {
-      setMsg(err.response?.data?.message || "Error updating user");
+      alert(res.data.message);
+    } catch (error) {
+      console.error(error);
+      alert(error.response?.data?.message || "Error updating user");
     }
   };
 
   return (
-    <div className="container mt-4">
-      <h3>Update User</h3>
-      <hr />
+    <div className="container mt-5">
+      <h3 className="fw-bold">Update User</h3>
+      <form onSubmit={handleUpdate} className="mt-4">
 
-      <input
-        name="userId"
-        placeholder="User ID"
-        className="form-control mb-3"
-        value={form.userId}
-        onChange={change}
-      />
+        <div className="mb-3">
+          <label className="form-label">Username (Required)</label>
+          <input
+            type="text"
+            className="form-control"
+            name="username"
+            placeholder="Enter username to update"
+            value={formData.username}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-      <input
-        name="name"
-        placeholder="Name"
-        className="form-control mb-3"
-        value={form.name}
-        onChange={change}
-      />
+        <div className="mb-3">
+          <label className="form-label">New Name</label>
+          <input
+            type="text"
+            className="form-control"
+            name="name"
+            placeholder="Enter new name"
+            value={formData.name}
+            onChange={handleChange}
+          />
+        </div>
 
-      <input
-        name="password"
-        type="password"
-        placeholder="New Password"
-        className="form-control mb-3"
-        value={form.password}
-        onChange={change}
-      />
+        <div className="mb-3">
+          <label className="form-label">New Password</label>
+          <input
+            type="password"
+            className="form-control"
+            name="password"
+            placeholder="Enter new password"
+            value={formData.password}
+            onChange={handleChange}
+          />
+        </div>
 
-      <label>Role:</label>
-      <select
-        name="role"
-        className="form-control mb-3"
-        value={form.role}
-        onChange={change}
-      >
-        <option value="">--Select--</option>
-        <option value="user">User</option>
-        <option value="admin">Admin</option>
-      </select>
+        <div className="mb-3">
+          <label className="form-label">Role</label>
+          <select
+            className="form-control"
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+          >
+            <option value="">Select role</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+          </select>
+        </div>
 
-      <label>Status:</label>
-      <select
-        name="status"
-        className="form-control mb-3"
-        value={form.status}
-        onChange={change}
-      >
-        <option value="">--Select--</option>
-        <option value="active">Active</option>
-        <option value="inactive">Inactive</option>
-      </select>
+        <div className="mb-3">
+          <label className="form-label">Status</label>
+          <select
+            className="form-control"
+            name="status"
+            value={formData.status}
+            onChange={handleChange}
+          >
+            <option value="">Select status</option>
+            <option value="active">Active</option>
+            <option value="disabled">Disabled</option>
+          </select>
+        </div>
 
-      <button className="btn btn-primary" onClick={submit}>
-        Update User
-      </button>
-
-      {msg && <div className="alert alert-info mt-3">{msg}</div>}
+        <button type="submit" className="btn btn-primary">
+          Update User
+        </button>
+      </form>
     </div>
   );
 };

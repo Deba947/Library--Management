@@ -32,7 +32,7 @@ const BookSchema = new mongoose.Schema({
     required: true
   },
 
-  // NEW FIELD — required for creating serials
+  
   serialCount: {
     type: Number,
     default: 1

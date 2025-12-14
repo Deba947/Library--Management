@@ -1,13 +1,13 @@
 import Membership from "../models/Membership.js";
 
-// Utility: add months to date
+// add months to date
 function addMonths(date, months) {
   const result = new Date(date);
   result.setMonth(result.getMonth() + months);
   return result;
 }
 
-// -------------------------------- ADD MEMBERSHIP --------------------------------
+//  ADD MEMBERSHIP 
 export const addMembership = async (req, res) => {
   try {
     const { membershipNumber, memberName, duration } = req.body;
@@ -26,6 +26,7 @@ export const addMembership = async (req, res) => {
     const membership = await Membership.create({
       membershipNumber,
       memberName,
+      duration: months,
       startDate,
       endDate,
       status: "active"
@@ -38,7 +39,7 @@ export const addMembership = async (req, res) => {
   }
 };
 
-// -------------------------------- UPDATE MEMBERSHIP (EXTEND / CANCEL) --------------------------------
+//  UPDATE MEMBERSHIP (EXTEND / CANCEL) 
 export const updateMembership = async (req, res) => {
   try {
     const { membershipNumber, action, duration } = req.body;
@@ -55,6 +56,7 @@ export const updateMembership = async (req, res) => {
       newEnd.setMonth(newEnd.getMonth() + extraMonths);
 
       member.endDate = newEnd;
+      member.duration = (member.duration || 0) + extraMonths;
       member.status = "active";
 
       await member.save();
@@ -80,10 +82,10 @@ export const updateMembership = async (req, res) => {
   }
 };
 
-// -------------------------------- DELETE MEMBERSHIP --------------------------------
+//  DELETE MEMBERSHIP
 export const deleteMembership = async (req, res) => {
   try {
-    const { membershipNumber } = req.params;
+    const { membershipNumber } = req.params; 
 
     const deleted = await Membership.findOneAndDelete({ membershipNumber });
 
@@ -91,13 +93,13 @@ export const deleteMembership = async (req, res) => {
       return res.status(404).json({ message: "Membership not found" });
 
     res.json({ message: "Membership deleted successfully" });
-
   } catch (err) {
     console.error("Delete Membership Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
-// -------------------------------- LIST MEMBERSHIPS --------------------------------
+
+//  LIST MEMBERSHIPS 
 export const listMemberships = async (req, res) => {
   try {
     const role = req.header("x-role");
@@ -105,7 +107,7 @@ export const listMemberships = async (req, res) => {
 
     let query = {};
 
-    // USER → only see their own membership
+    // USER only see their own membership
     if (role === "user") {
       query.memberName = username;  
     }
@@ -118,4 +120,3 @@ export const listMemberships = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-

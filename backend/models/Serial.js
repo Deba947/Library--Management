@@ -13,7 +13,7 @@ const SerialSchema = new mongoose.Schema({
     unique: true
   },
 
-  // NEW FIELDS — required for IssueBook & ReturnBook
+  
   bookName: {
     type: String,
     required: true

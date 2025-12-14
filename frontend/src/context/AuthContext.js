@@ -11,12 +11,14 @@ export const AuthProvider = ({ children }) => {
     setUser(data);
     localStorage.setItem("user", JSON.stringify(data));
     localStorage.setItem("role", data.role);
+    localStorage.setItem("username", data.username);
   };
 
   const logout = () => {
   setUser(null);
   localStorage.removeItem("user");
   localStorage.removeItem("role");
+  localStorage.removeItem("username");
   window.location = "/";  // Redirect to login
 };
 

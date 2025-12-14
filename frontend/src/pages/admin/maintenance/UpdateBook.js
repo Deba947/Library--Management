@@ -6,7 +6,7 @@ import { Navigate } from "react-router-dom";
 const UpdateBook = () => {
   const { user } = useContext(AuthContext);
 
-  // Hooks must stay on top
+ 
   const [form, setForm] = useState({
     bookId: "",
     type: "book",
@@ -18,7 +18,7 @@ const UpdateBook = () => {
 
   const [msg, setMsg] = useState("");
 
-  // ADMIN PROTECTION (MUST COME AFTER HOOKS)
+  
   if (user?.role !== "admin") return <Navigate to="/" />;
 
   const handleChange = (e) => {
@@ -32,7 +32,7 @@ const UpdateBook = () => {
     }
 
     try {
-      const res = await API.put("/book/update", form, {
+      const res = await API.put("/book/books/update", form, {
         headers: { "x-role": user.role }
       });
       setMsg(res.data.message);

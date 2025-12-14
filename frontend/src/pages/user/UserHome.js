@@ -11,7 +11,6 @@ const UserHome = () => {
 
       <div className="row g-4 mt-4">
 
-        {/* Row 1 */}
         <div className="col-md-6">
           <Link to="/transactions/book-availability" className="user-card card-blue">
             <div className="icon">📘</div>
@@ -26,22 +25,21 @@ const UserHome = () => {
           </Link>
         </div>
 
-        {/* Row 2 */}
         <div className="col-md-6">
           <Link to="/reports/master-memberships" className="user-card card-blue">
             <div className="icon">🧾</div>
-            <h5>Master Membership</h5>
+            <h5>My Membership</h5>
           </Link>
         </div>
 
+        {/* ✅ ACTIVE ISSUES (CORRECT PATH) */}
         <div className="col-md-6">
-          <Link to="/reports/master-books" className="user-card card-green">
+          <Link to="/transactions/active-issues" className="user-card card-green">
             <div className="icon">📚</div>
-            <h5>Master Book List</h5>
+            <h5>My Active Issues</h5>
           </Link>
         </div>
 
-        {/* Row 3 → Center Last Card */}
         <div className="col-md-6 offset-md-3">
           <Link to="/transactions/overdue" className="user-card card-red">
             <div className="icon">⏰</div>

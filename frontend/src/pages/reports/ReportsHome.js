@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
-import "./reports.css"; // NEW CSS FILE
+import "./reports.css"; 
 
 const ReportsHome = () => {
   const { user } = useContext(AuthContext);

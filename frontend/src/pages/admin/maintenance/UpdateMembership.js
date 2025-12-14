@@ -6,13 +6,12 @@ import { Navigate } from "react-router-dom";
 const UpdateMembership = () => {
   const { user } = useContext(AuthContext);
 
-  // ✅ Hooks ALWAYS go first — NEVER inside conditions
+ 
   const [membershipNumber, setMembershipNumber] = useState("");
   const [action, setAction] = useState("extend");
   const [msg, setMsg] = useState("");
 
-  // ❌ DO NOT put hooks below this line  
-  // ✅ Now we can conditionally return safely
+  
   if (user?.role !== "admin") {
     return <Navigate to="/" replace />;
   }

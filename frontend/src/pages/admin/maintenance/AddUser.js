@@ -6,7 +6,7 @@ import { Navigate } from "react-router-dom";
 const AddUser = () => {
   const { user } = useContext(AuthContext);
 
-  // Hooks must always be at the top
+  
   const [form, setForm] = useState({
     username: "",
     password: "",
@@ -16,7 +16,7 @@ const AddUser = () => {
 
   const [msg, setMsg] = useState("");
 
-  // ADMIN PROTECTION (after hooks)
+  
   if (user?.role !== "admin") return <Navigate to="/" />;
 
   const change = (e) => {

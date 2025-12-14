@@ -23,14 +23,20 @@ const AddBook = () => {
 
   const submit = async () => {
     for (let field in form) {
-      if (!form[field]) {
+      if (form[field] === "" || form[field] === null) {
         setMsg("All fields are mandatory");
         return;
       }
     }
 
+    const payload = {
+      ...form,
+      cost: Number(form.cost),
+      serialCount: Number(form.serialCount)
+    };
+
     try {
-      const res = await API.post("/book/add", form, {
+      const res = await API.post("/book/books/add", payload, {
         headers: { "x-role": user?.role }
       });
       setMsg(res.data.message);
@@ -50,57 +56,17 @@ const AddBook = () => {
         <option value="movie">Movie</option>
       </select>
 
-      <input
-        type="text"
-        name="name"
-        placeholder="Name"
-        className="form-control mb-3"
-        onChange={handleChange}
-      />
-
-      <input
-        type="text"
-        name="author"
-        placeholder="Author"
-        className="form-control mb-3"
-        onChange={handleChange}
-      />
-
-      <input
-        type="text"
-        name="category"
-        placeholder="Category"
-        className="form-control mb-3"
-        onChange={handleChange}
-      />
-
-      <input
-        type="number"
-        name="cost"
-        placeholder="Cost"
-        className="form-control mb-3"
-        onChange={handleChange}
-      />
+      <input type="text" name="name" placeholder="Name" className="form-control mb-3" onChange={handleChange} />
+      <input type="text" name="author" placeholder="Author" className="form-control mb-3" onChange={handleChange} />
+      <input type="text" name="category" placeholder="Category" className="form-control mb-3" onChange={handleChange} />
+      <input type="number" name="cost" placeholder="Cost" className="form-control mb-3" onChange={handleChange} />
 
       <label>Procurement Date:</label>
-      <input
-        type="date"
-        name="procurementDate"
-        className="form-control mb-3"
-        onChange={handleChange}
-      />
+      <input type="date" name="procurementDate" className="form-control mb-3" onChange={handleChange} />
 
-      <input
-        type="number"
-        name="serialCount"
-        placeholder="No. of Copies"
-        className="form-control mb-3"
-        onChange={handleChange}
-      />
+      <input type="number" name="serialCount" placeholder="No. of Copies" className="form-control mb-3" onChange={handleChange} />
 
-      <button className="btn btn-primary" onClick={submit}>
-        Add Book
-      </button>
+      <button className="btn btn-primary" onClick={submit}>Add Book</button>
 
       {msg && <div className="alert alert-info mt-3">{msg}</div>}
     </div>

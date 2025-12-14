@@ -11,19 +11,20 @@ const BookAvailability = () => {
 
   const search = async () => {
     if (!name && !author) {
-      setError("Enter book name or author to search");
+      setError("Enter book name or author");
       return;
     }
 
     try {
-      const res = await API.get(
-        `/transaction/search?name=${name}&author=${author}`
-      );
+      const params = new URLSearchParams();
+      if (name.trim()) params.append("name", name.trim());
+      if (author.trim()) params.append("author", author.trim());
+
+      const res = await API.get(`/transaction/search?${params.toString()}`);
 
       navigate("/transactions/search-results", {
-        state: { results: res.data },
+        state: { results: res.data }
       });
-
     } catch (err) {
       setError("No results found");
     }
@@ -37,12 +38,14 @@ const BookAvailability = () => {
       <input
         className="form-control mb-3"
         placeholder="Book Name"
+        value={name}
         onChange={(e) => setName(e.target.value)}
       />
 
       <input
         className="form-control mb-3"
         placeholder="Author"
+        value={author}
         onChange={(e) => setAuthor(e.target.value)}
       />
 

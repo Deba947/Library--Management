@@ -8,7 +8,6 @@ const IssueBook = () => {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
 
-  // ---- Always create hooks at the top (ESLint safe) ----
   const serial = state?.serial || null;
 
   const today = new Date().toISOString().split("T")[0];
@@ -24,7 +23,7 @@ const IssueBook = () => {
   const [remarks, setRemarks] = useState("");
   const [error, setError] = useState("");
 
-  // ---- If serial missing → block screen (AFTER hooks) ----
+  
   if (!serial) {
     return (
       <div className="container mt-4">
@@ -35,7 +34,7 @@ const IssueBook = () => {
     );
   }
 
-  // ---- Submit request ----
+  
   const submitIssue = async () => {
     setError("");
 
